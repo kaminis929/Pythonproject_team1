@@ -1,0 +1,84 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+class Particle:
+    def __init__(self, position, velocity, mass, particle_type):
+        """
+        Initialize a particle with its attributes.
+        :param position: np.array of shape (3,) representing (x, y, z)
+        :param velocity: np.array of shape (3,) representing velocity in (x, y, z)
+        :param mass: float, mass of the particle
+        :param particle_type: str, type of particle (e.g., 'proton', 'electron')
+        """
+        self.position = np.array(position, dtype=float)
+        self.velocity = np.array(velocity, dtype=float)
+        self.mass = mass
+        self.type = particle_type
+        self.decayed = False
+
+    def update_position(self, time_step):
+        """
+        Update the particle's position based on its velocity and a time step.
+        """
+        self.position += self.velocity * time_step
+
+    def decay(self, decay_probability=0.02):
+        """
+        Simulate particle decay with a given probability.
+        """
+        if not self.decayed and np.random.random() < decay_probability:
+            self.decayed = True
+            self.type = "decayed-" + self.type
+            return True
+        return False
+
+# Visualization Function
+def visualize_particle():
+    # Initialize the particle
+    particle = Particle(position=[0, 0, 0], velocity=[0.8, 0.5, 0.3], mass=1.0, particle_type="proton")
+
+    positions = [particle.position.copy()]
+    decay_step = None  # Track when decay occurs
+    time_step = 0.1
+    total_steps = 50
+
+    # Simulate particle movement
+    for step in range(total_steps):
+        particle.update_position(time_step)
+        if particle.decay() and decay_step is None:
+            decay_step = step  # Record the step of decay
+        positions.append(particle.position.copy())
+
+    # Convert positions to a NumPy array for easier plotting
+    positions = np.array(positions)
+
+    # Plot the particle's movement
+    fig = plt.figure(figsize=(10, 7))
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Plot the particle's path
+    ax.plot(positions[:, 0], positions[:, 1], positions[:, 2], label="Particle Path", color="blue", linewidth=2)
+
+    # Highlight the decay point if decay occurred
+    if decay_step is not None:
+        ax.scatter(
+            positions[decay_step, 0], positions[decay_step, 1], positions[decay_step, 2],
+            color="red", label="Decay Point", s=100
+        )
+
+    # Set plot labels and title
+    ax.set_title("Particle Movement and Decay Visualization", fontsize=14)
+    ax.set_xlabel("X Position", fontsize=12)
+    ax.set_ylabel("Y Position", fontsize=12)
+    ax.set_zlabel("Z Position", fontsize=12)
+
+    # Add legend for clarity
+    ax.legend(loc="best")
+
+    # Display the plot
+    plt.show()
+
+# Run the visualization
+if __name__ == "__main__":
+    visualize_particle()
